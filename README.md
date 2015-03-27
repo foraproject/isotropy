@@ -1,2 +1,4 @@
-# isotropy
-Isomorphic Router for iojs/nodejs and the browser
+istropy
+===========
+
+An Isomorphic router with a generator-based async API
