@@ -10,7 +10,6 @@
     "main": "lib/isotropy",
     "dependencies": {
         "path-to-regexp": "*",
-        "isotropy-request": "*",
         "isotropy-router": "*"
     },
     "devDependencies": {},
