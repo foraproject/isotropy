@@ -1,81 +1,83 @@
-import Router from "isotropy-router";
-import koa from "koa";
+import getRouter from "isotropy-router";
 
-/*
-    You can write the export as
-        { ui_react, api_graphql, filetore }
+export default function(koa, mount, pathToRegexp) {
 
-    A module named 'static' defaults to type "static".
-    A module named 'ui_react' defaults to type "ui_react".
-    A module named 'api_graphql' defaults to type "api_graphql".
-    Other modules defaults to type "service".
+    let Router = getRouter(pathToRegexp);
 
-    The 'static' module defaults to path "/static".
-    The 'ui_react' module defaults to path "/".
-    The 'api_graphql' module defaults to path "/graphql".
-    Other modules are hosted at /module-name
+    let getDefaultValues = function(key, val) {
+        let result = (typeof val.module !== "undefined") ? val : { module: val };
 
-    Domain and port defaults to "auto".
-    This means that the system will assign a port based on rules.
-*/
-let getDefaultValues = function(key, val) {
-    let result = (typeof val.module !== "undefined") ? val : { module: val };
+        //The 'static' module defaults to path "/static".
+        if (key === "static") {
+            result.type = result.type || "static";
+            result.path = result.path || "/static";
+        }
+        //The 'ui_react' module defaults to path "/".
+        else if (key === "ui_react") {
+            result.type = result.type || "ui_react";
+            result.path = result.path || "/";
+        }
+        //The 'api_graphql' module defaults to path "/graphql".
+        else if (key === "api_graphql") {
+            result.type = result.type || "api_graphql";
+            result.path = result.path || "/graphql";
+        }
+        //Other modules are hosted at /module-name
+        else {
+            result.type = result.type || "service";
+            result.path = result.path || `/${key}`;
+        }
 
-    if (!result.domain) result.domain = "auto";
-    if (!result.port) result.port = 8080;
-
-    if (key === "static") {
-        result.type = result.type || "static";
-        result.path = result.path || "/static";
-    } else if (key === "ui_react") {
-        result.type = result.type || "ui_react";
-        result.path = result.path || "/";
-    } else if (key === "api_graphql") {
-        result.type = result.type || "api_graphql";
-        result.path = result.path || "/graphql";
-    } else {
-        result.type = result.type || "service";
-        result.path = result.path || `/${key}`;
-    }
-
-    return result;
-};
+        return result;
+    };
 
 
-let hostStatic = function(module, server) {
-    var router = new Router(module.routes, server);
-};
+    let hostStatic = function(module, server) {
+        var router = new Router(module.routes, server);
+    };
 
 
-let hostReactUI = function(module, server) {
-    var router = new Router(module.routes, server);
-};
+    let hostReactUI = function(module, server) {
+        var router = new Router(module.routes, server);
+    };
 
 
-let hostGraphqlAPI = function(module, server) {
-    var router = new Router(module.routes, server);
-};
+    let hostGraphqlAPI = function(module, server) {
+        var router = new Router(module.routes, server);
+    };
 
 
-let hostService = function(module, server) {
-    var router = new Router(module.routes, server);
-};
+    let hostService = function(module, server) {
+        var router = new Router(module.routes, server);
+    };
 
 
-export default function(app) {
-    for (let key in app) {
-        let val = getDefaultValues(key, app[key]);
+    return function(apps, port) {
+        //Let's create default instance.
+        //We use this if numInstances is unspecified for an app.
+        let defaultInstance = koa();
 
-        let server = new koa();
+        for (let key in apps) {
+            let val = getDefaultValues(key, apps[key]);
 
-        let hostFn = {
-            "static": hostStatic,
-            "ui_react": hostReactUI,
-            "api_graphql": hostGraphqlAPI,
-            "service": hostService
-        }[val.type];
-        hostFn(val.module, server);
+            let hostFn = {
+                "static": hostStatic,
+                "ui_react": hostReactUI,
+                "api_graphql": hostGraphqlAPI,
+                "service": hostService
+            }[val.type];
 
-        server.listen(val.port);
-    }
+            if (val.module.path === "/") {
+                hostFn(val.module, defaultInstance);
+            } else {
+                var newInstance = koa();
+                hostFn(val.module, newInstance);
+                defaultInstance.use(mount(newInstance), val.module.path);
+            }
+
+            hostFn(val.module, defaultInstance);
+        }
+
+        defaultInstance.listen(port);
+    };
 };
