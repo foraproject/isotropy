@@ -1,7 +1,7 @@
 {
     "author": "Jeswin Kumar <jeswinpk@agilehead.com>",
     "name": "isotropy",
-    "version": "5.0.2",
+    "version": "5.0.3",
     "description": "Isomorphic Router with a generator based API.",
     "repository": {
         "type": "git",
@@ -18,8 +18,6 @@
         "babel-preset-react": "*",
         "babel-preset-stage-2": "*"
     },
-    "devDependencies": {},
-    "engines": { "node": ">= 0.11.9" },
-    "keywords": ["serialization"],
+    "keywords": ["router"],
     "license" : "MIT"
 }
