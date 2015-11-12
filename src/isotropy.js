@@ -1,8 +1,12 @@
+import path from "path";
 import getRouter from "isotropy-router";
 
-export default function(koa, mount, pathToRegexp) {
+export default function(options, dependencies) {
+    let { koa, koaMount, koaStatic, pathToRegexp } = dependencies;
 
-    let Router = getRouter(pathToRegexp);
+    options.dir = options.dir || process.cwd();
+
+    let Router = getRouter({}, { pathToRegexp });
 
     let getDefaultValues = function(key, val) {
         let result = (typeof val.module !== "undefined") ? val : { module: val };
@@ -32,27 +36,27 @@ export default function(koa, mount, pathToRegexp) {
     };
 
 
-    let hostStatic = function(module, server) {
-        var router = new Router(module.routes, server);
+    let hostStatic = async function(module, server) {
+        server.use(koaStatic(path.join(options.dir, module.path)));
     };
 
 
-    let hostReactUI = function(module, server) {
-        var router = new Router(module.routes, server);
+    let hostReactUI = async function(module, server) {
+        let router = new Router(module.routes, server);
     };
 
 
-    let hostGraphqlAPI = function(module, server) {
-        var router = new Router(module.routes, server);
+    let hostGraphqlAPI = async function(module, server) {
+        let router = new Router(module.routes, server);
     };
 
 
-    let hostService = function(module, server) {
-        var router = new Router(module.routes, server);
+    let hostService = async function(module, server) {
+        let router = new Router(module.routes, server);
     };
 
 
-    return function(apps, port) {
+    return async function(apps, port) {
         //Let's create default instance.
         //We use this if numInstances is unspecified for an app.
         let defaultInstance = koa();
@@ -67,15 +71,13 @@ export default function(koa, mount, pathToRegexp) {
                 "service": hostService
             }[val.type];
 
-            if (val.module.path === "/") {
-                hostFn(val.module, defaultInstance);
+            if (val.path === "/") {
+                await hostFn(val.module, defaultInstance);
             } else {
-                var newInstance = koa();
-                hostFn(val.module, newInstance);
-                defaultInstance.use(mount(newInstance), val.module.path);
+                let newInstance = koa();
+                await hostFn(val.module, newInstance);
+                defaultInstance.use(koaMount(val.path, newInstance));
             }
-
-            hostFn(val.module, defaultInstance);
         }
 
         defaultInstance.listen(port);
