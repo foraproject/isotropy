@@ -1,12 +1,10 @@
 import path from "path";
-import getRouter from "isotropy-router";
+import Router from "isotropy-router";
+import koa from "koa";
+import koaMount from "koa-mount";
+import koaStatic from "koa-static";
 
-export default function(options, dependencies) {
-    let { koa, koaMount, koaStatic, pathToRegexp } = dependencies;
-
-    options.dir = options.dir || process.cwd();
-
-    let Router = getRouter({}, { pathToRegexp });
+let isotropy = async function(apps, dir, port) {
 
     let getDefaultValues = function(key, val) {
         let result = (typeof val.module !== "undefined") ? val : { module: val };
@@ -35,9 +33,8 @@ export default function(options, dependencies) {
         return result;
     };
 
-
     let hostStatic = async function(module, server) {
-        server.use(koaStatic(path.join(options.dir, module.path)));
+        server.use(koaStatic(path.join(dir, module.path)));
     };
 
 
@@ -55,31 +52,30 @@ export default function(options, dependencies) {
         let router = new Router(module.routes, server);
     };
 
+    //Let's create default instance.
+    //We use this if numInstances is unspecified for an app.
+    let defaultInstance = koa();
 
-    return async function(apps, port) {
-        //Let's create default instance.
-        //We use this if numInstances is unspecified for an app.
-        let defaultInstance = koa();
+    for (let key in apps) {
+        let val = getDefaultValues(key, apps[key]);
 
-        for (let key in apps) {
-            let val = getDefaultValues(key, apps[key]);
+        let hostFn = {
+            "static": hostStatic,
+            "ui_react": hostReactUI,
+            "api_graphql": hostGraphqlAPI,
+            "service": hostService
+        }[val.type];
 
-            let hostFn = {
-                "static": hostStatic,
-                "ui_react": hostReactUI,
-                "api_graphql": hostGraphqlAPI,
-                "service": hostService
-            }[val.type];
-
-            if (val.path === "/") {
-                await hostFn(val.module, defaultInstance);
-            } else {
-                let newInstance = koa();
-                await hostFn(val.module, newInstance);
-                defaultInstance.use(koaMount(val.path, newInstance));
-            }
+        if (val.path === "/") {
+            await hostFn(val.module, defaultInstance);
+        } else {
+            let newInstance = koa();
+            await hostFn(val.module, newInstance);
+            defaultInstance.use(koaMount(val.path, newInstance));
         }
+    }
 
-        defaultInstance.listen(port);
-    };
+    defaultInstance.listen(port);
 };
+
+export default isotropy;
