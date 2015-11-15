@@ -33,28 +33,51 @@ let isotropy = async function(apps, dir, port) {
         return result;
     };
 
+
     let hostStatic = async function(module, server) {
         server.use(koaStatic(path.join(dir, module.path)));
     };
 
 
     let hostReactUI = async function(module, server) {
-        let router = new Router(module.routes, server);
+        let router = new Router();
+        router.add(module.routes);
+
+        let routeFunc = async function(next) {
+            await router.doRouting(this, next);
+        };
+
+        server.use(routeFunc);
     };
 
 
     let hostGraphqlAPI = async function(module, server) {
-        let router = new Router(module.routes, server);
+        let router = new Router();
+        router.add(module.routes);
+
+        let routeFunc = async function(next) {
+            await router.doRouting(this, next);
+        };
+
+        server.use(routeFunc);
     };
 
 
     let hostService = async function(module, server) {
-        let router = new Router(module.routes, server);
+        let router = new Router();
+        router.add(module.routes);
+
+        let routeFunc = async function(next) {
+            await router.doRouting(this, next);
+        };
+
+        server.use(routeFunc);
     };
 
     //Let's create default instance.
     //We use this if numInstances is unspecified for an app.
     let defaultInstance = koa();
+    defaultInstance.experimental = true;
 
     for (let key in apps) {
         let val = getDefaultValues(key, apps[key]);
@@ -70,6 +93,7 @@ let isotropy = async function(apps, dir, port) {
             await hostFn(val.module, defaultInstance);
         } else {
             let newInstance = koa();
+            newInstance.experimental = true;
             await hostFn(val.module, newInstance);
             defaultInstance.use(koaMount(val.path, newInstance));
         }
