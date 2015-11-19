@@ -1,13 +1,13 @@
 import path from "path";
-import Router from "isotropy-router";
 import koa from "koa";
-import koaMount from "koa-mount";
-import koaStatic from "koa-static";
+import Router from "isotropy-router";
+import mount from "isotropy-mount";
+import staticHandler from "isotropy-static";
 
-let isotropy = async function(apps, dir, port) {
+const isotropy = async function(apps, dir, port) {
 
-    let getDefaultValues = function(key, val) {
-        let result = (typeof val.module !== "undefined") ? val : { module: val };
+    const getDefaultValues = function(key, val) {
+        const result = (typeof val.module !== "undefined" || val.type === "static") ? val : { module: val };
 
         //The 'static' module defaults to path "/static".
         if (key === "static") {
@@ -34,14 +34,21 @@ let isotropy = async function(apps, dir, port) {
     };
 
 
-    let hostStatic = async function(module, server) {
-        server.use(koaStatic(path.join(dir, module.path)));
+    const hostStatic = async function(app, server) {
+        server.use(staticHandler(path.join(dir, app.dir)));
     };
 
 
-    let hostReactUI = async function(module, server) {
+    const hostReactUI = async function(app, server) {
         let router = new Router();
-        router.add(module.routes);
+        router.add(app.module.routes);
+        server.use(async (ctx, next) => { await router.doRouting(ctx, next) });
+    };
+
+
+    const hostGraphqlAPI = async function(app, server) {
+        let router = new Router();
+        router.add(app.module.routes);
 
         let routeFunc = async function(next) {
             await router.doRouting(this, next);
@@ -51,21 +58,9 @@ let isotropy = async function(apps, dir, port) {
     };
 
 
-    let hostGraphqlAPI = async function(module, server) {
+    const hostService = async function(app, server) {
         let router = new Router();
-        router.add(module.routes);
-
-        let routeFunc = async function(next) {
-            await router.doRouting(this, next);
-        };
-
-        server.use(routeFunc);
-    };
-
-
-    let hostService = async function(module, server) {
-        let router = new Router();
-        router.add(module.routes);
+        router.add(app.module.routes);
 
         let routeFunc = async function(next) {
             await router.doRouting(this, next);
@@ -76,13 +71,12 @@ let isotropy = async function(apps, dir, port) {
 
     //Let's create default instance.
     //We use this if numInstances is unspecified for an app.
-    let defaultInstance = koa();
-    defaultInstance.experimental = true;
+    const defaultInstance = new koa();
 
     for (let key in apps) {
-        let val = getDefaultValues(key, apps[key]);
+        const val = getDefaultValues(key, apps[key]);
 
-        let hostFn = {
+        const hostFn = {
             "static": hostStatic,
             "ui_react": hostReactUI,
             "api_graphql": hostGraphqlAPI,
@@ -90,12 +84,11 @@ let isotropy = async function(apps, dir, port) {
         }[val.type];
 
         if (val.path === "/") {
-            await hostFn(val.module, defaultInstance);
+            await hostFn(val, defaultInstance);
         } else {
-            let newInstance = koa();
-            newInstance.experimental = true;
-            await hostFn(val.module, newInstance);
-            defaultInstance.use(koaMount(val.path, newInstance));
+            const newInstance = new koa();
+            await hostFn(val, newInstance);
+            defaultInstance.use(mount(val.path, newInstance));
         }
     }
 
