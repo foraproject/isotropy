@@ -3,6 +3,7 @@ import koa from "koa";
 import Router from "isotropy-router";
 import mount from "isotropy-mount";
 import staticHandler from "isotropy-static";
+import graphqlHTTP from 'koa-graphql';
 
 const isotropy = async function(apps, dir, port) {
 
@@ -47,26 +48,18 @@ const isotropy = async function(apps, dir, port) {
 
 
     const hostGraphqlAPI = async function(app, server) {
-        let router = new Router();
-        router.add(app.module.routes);
-
-        let routeFunc = async function(next) {
-            await router.doRouting(this, next);
-        };
-
-        server.use(routeFunc);
+        server.use(graphqlHTTP((request, context) => ({
+          schema: MySessionAwareGraphQLSchema,
+          rootValue: { session: context.session },
+          graphiql: true
+        })));
     };
 
 
     const hostService = async function(app, server) {
         let router = new Router();
         router.add(app.module.routes);
-
-        let routeFunc = async function(next) {
-            await router.doRouting(this, next);
-        };
-
-        server.use(routeFunc);
+        server.use(async (ctx, next) => { await router.doRouting(ctx, next) });
     };
 
     //Let's create default instance.
