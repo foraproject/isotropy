@@ -1,7 +1,7 @@
 {
     "author": "Jeswin Kumar <jeswinpk@agilehead.com>",
     "name": "isotropy",
-    "version": "5.2.1",
+    "version": "5.2.2",
     "description": "Loader for Isotropy applications.",
     "repository": {
         "type": "git",
