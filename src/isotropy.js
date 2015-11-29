@@ -7,33 +7,49 @@ import staticHandler from "isotropy-static";
 import graphqlHTTP from 'koa-graphql';
 
 
-const isotropy = async function(apps: Array<App1>, dir: string, port: number) {
+const isotropy = async function(apps: ApplicationConfigType, dir: string, port: number) : Promise {
 
-    const getDefaultValues = function(key: string, val) {
-        const result = (typeof val.module !== "undefined" || val.type === "static") ? val : { module: val };
-
-        //The 'static' module defaults to path "/static".
+    const getDefaultValues = function(key: string, val: Object = {}) : ApplicationDefinitionType {
         if (key === "static") {
-            result.type = result.type || "static";
-            result.path = result.path || "/static";
+            const result: StaticSiteType = {
+                dir: val.dir || "static",
+                path: val.path || "/static"
+            };
+            return result;
         }
-        //The 'ui_react' module defaults to path "/".
         else if (key === "ui_react") {
-            result.type = result.type || "ui_react";
-            result.path = result.path || "/";
+            if (!val.type === "ui_react") {
+                val = { module: val }
+            }
+            const result: ReactUIType  =  {
+                module: val.module,
+                type: val.type || "ui_react",
+                path: val.path || "/"
+            };
+            return result;
         }
-        //The 'api_graphql' module defaults to path "/graphql".
         else if (key === "api_graphql") {
-            result.type = result.type || "api_graphql";
-            result.path = result.path || "/graphql";
+            if (!val.type === "api_graphql") {
+                val = { schema: val }
+            }
+            const result: GraphQLServiceType = {
+                schema: val.schema,
+                type: val.type || "api_graphql",
+                path: val.path || "/graphql"
+            };
+            return result;
         }
-        //Other modules are hosted at /module-name
         else {
-            result.type = result.type || "service";
-            result.path = result.path || `/${key}`;
+            if (!val.module) {
+                val = { module: val }
+            }
+            const result: WebAppType = {
+                module: val.module,
+                type: val.type || "app",
+                path: val.path || `/${key}`
+            };
+            return result;
         }
-
-        return result;
     };
 
 
