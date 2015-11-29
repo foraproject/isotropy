@@ -1,3 +1,4 @@
+/* @flow */
 import path from "path";
 import koa from "koa";
 import Router from "isotropy-router";
@@ -5,9 +6,10 @@ import mount from "isotropy-mount";
 import staticHandler from "isotropy-static";
 import graphqlHTTP from 'koa-graphql';
 
-const isotropy = async function(apps, dir, port) {
 
-    const getDefaultValues = function(key, val) {
+const isotropy = async function(apps: Array<App1>, dir: string, port: number) {
+
+    const getDefaultValues = function(key: string, val) {
         const result = (typeof val.module !== "undefined" || val.type === "static") ? val : { module: val };
 
         //The 'static' module defaults to path "/static".

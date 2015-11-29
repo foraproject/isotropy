@@ -1,0 +1,12 @@
+[include]
+
+[libs]
+type-definitions/isotropy-types.js
+
+[options]
+
+[ignore]
+.*/dist/.*
+.*/coverage/.*
+.*/scripts/.*
+.*/node_modules/.*
