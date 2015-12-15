@@ -3,6 +3,10 @@
     "name": "isotropy",
     "version": "5.2.2",
     "description": "Loader for Isotropy applications.",
+    "scripts": {
+        "update-schema": "node ./dist/scripts/updateSchema.js",
+        "test": "mocha dist/test/test.js"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/jeswin/isotropy.git"
@@ -10,19 +14,32 @@
     "main": "dist/isotropy",
     "license": "MIT",
     "dependencies": {
-        "koa": "2.0.0-alpha.3",
-        "isotropy-router": "*",
         "isotropy-mount": "*",
-        "isotropy-static": "*"
+        "isotropy-plugin-static": "*",
+        "isotropy-plugin-webapp": "*",
+        "isotropy-plugin-graphql": "*",
+        "isotropy-plugin-react": "*"
     },
     "devDependencies": {
-        "mocha": "*",
-        "should": "*",
+        "koa": "2.0.0-alpha.3",
+        "express": "*",
+        "express-graphql": "*",
+        "graphql": "*",
+        "graphql-relay": "*",
         "babel-polyfill": "*",
         "babel-preset-es2015": "*",
         "babel-preset-react": "*",
-        "babel-preset-stage-2": "*"
+        "babel-preset-stage-2": "*",
+        "babel-plugin-transform-class-properties": "*",
+        "babel-relay-plugin-loader": "*",
+        "mocha": "*",
+        "should": "*"
     },
-    "keywords": ["router"],
+    "metadata": {
+        "graphql": {
+            "schema": "./dist/test/react/my-schema.json"
+        }
+    },
+    "keywords": ["isotropy", "isomorphic"],
     "license" : "MIT"
 }
