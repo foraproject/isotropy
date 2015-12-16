@@ -8,7 +8,7 @@ import graphqlPlugin from "isotropy-plugin-graphql";
 import reactPlugin from "isotropy-plugin-react";
 
 type Plugin = {
-    getDefaultValues: (app: Object) => Object,
+    getDefaults: (app: Object) => Object,
     setup: (appSettings: Object, instance: KoaType, options: PluginOptions) => Promise
 };
 
@@ -47,7 +47,7 @@ const isotropy = async function(apps: Object, options: IsotropyOptionsType) : Pr
 
     for (let app of apps) {
         const plugin: Plugin = plugins[app.type];
-        const appSettings = plugin.getDefaultValues(app);
+        const appSettings = plugin.getDefaults(app);
         if (appSettings.path === "/") {
             await plugin.setup(appSettings, defaultInstance, pluginOptions);
         } else {
