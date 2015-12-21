@@ -1,7 +1,8 @@
 declare module "koa" {
     declare type KoaType = {
         use: (middleware: KoaMiddlewareType) => void;
-        middleware: Array<KoaMiddlewareType>
+        middleware: Array<KoaMiddlewareType>;
+        listen: (port?: number) => void;
     }
 
     declare type KoaMiddlewareType = (context: KoaContextType, next: KoaNextType) => Promise
