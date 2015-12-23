@@ -51,7 +51,6 @@ describe("Isotropy", () => {
     it(`Should serve a static site at /static`, async () => {
         const apps = [{ type: "static" }];
         await isotropy(apps, { dir: __dirname, defaultInstance });
-        debugger;
         const data = await makeRequest("localhost", 8080, "/static/hello.txt", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
         data.should.equal("hello, world\n");
     });
