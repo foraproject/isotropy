@@ -29,7 +29,11 @@ type IsotropyOptionsType = {
     defaultInstance: KoaType
 };
 
-const isotropy = async function(apps: Object, options: IsotropyOptionsType) : Promise {
+export type IsotropyResultType = {
+    koa: KoaType
+};
+
+const isotropy = async function(apps: Object, options: IsotropyOptionsType) : Promise<IsotropyResultType> {
     const dir = options.dir || __dirname;
     const port = options.port || 8080;
     const defaultInstance: KoaType = options.defaultInstance || new koa();
@@ -61,6 +65,10 @@ const isotropy = async function(apps: Object, options: IsotropyOptionsType) : Pr
     if (!options.defaultInstance) {
         defaultInstance.listen(port);
     }
+
+    return {
+        koa: defaultInstance
+    };
 };
 
 export default isotropy;
