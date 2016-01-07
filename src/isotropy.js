@@ -1,5 +1,5 @@
 /* @flow */
-import type { KoaType } from "./flow/koa-types";
+import type { KoaType } from "koa";
 import koa from "koa";
 import mount from "isotropy-mount";
 import staticPlugin from "isotropy-plugin-static";
