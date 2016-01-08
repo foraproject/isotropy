@@ -1,7 +1,7 @@
 /* @flow */
 import type { KoaType } from "koa";
 import koa from "koa";
-import mount from "isotropy-mount";
+import getIsotropy from "isotropy-core";
 import staticPlugin from "isotropy-plugin-static";
 import webappPlugin from "isotropy-plugin-webapp";
 import graphqlPlugin from "isotropy-plugin-graphql";
@@ -33,42 +33,16 @@ export type IsotropyResultType = {
     koa: KoaType
 };
 
-const isotropy = async function(apps: Object, options: IsotropyOptionsType) : Promise<IsotropyResultType> {
-    const dir = options.dir || __dirname;
-    const port = options.port || 8080;
-    const defaultInstance: KoaType = options.defaultInstance || new koa();
-    const plugins: Plugins = options.plugins || {};
+type IsotropyFnType = (apps: Object, options: IsotropyOptionsType) => Promise<IsotropyResultType>;
 
-    plugins["static"] = staticPlugin;
-    plugins["webapp"] = webappPlugin;
-    plugins["graphql"] = graphqlPlugin;
-    plugins["react"] = reactPlugin;
-
-    const pluginOptions = {
-        dir,
-        port
-    };
-
-    for (let app of apps) {
-        const plugin: Plugin = plugins[app.type];
-        const appSettings = plugin.getDefaults(app);
-        if (appSettings.path === "/") {
-            await plugin.setup(appSettings, defaultInstance, pluginOptions);
-        } else {
-            const newInstance = new koa();
-            await plugin.setup(appSettings, newInstance, pluginOptions);
-            defaultInstance.use(mount(appSettings.path, newInstance));
-        }
+const isotropy: IsotropyFnType = getIsotropy(
+    koa,
+    {
+        static: staticPlugin,
+        webapp: webappPlugin,
+        graphql: graphqlPlugin,
+        react: reactPlugin
     }
-
-    // If we were passed in defaultInstance via options, listen() must be done at callsite.
-    if (!options.defaultInstance) {
-        defaultInstance.listen(port);
-    }
-
-    return {
-        koa: defaultInstance
-    };
-};
+);
 
 export default isotropy;
