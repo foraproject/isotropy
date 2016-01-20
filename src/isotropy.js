@@ -7,38 +7,38 @@ import graphqlPlugin from "isotropy-plugin-graphql";
 import reactPlugin from "isotropy-plugin-react";
 
 type Plugin = {
-    getDefaults: (app: Object) => Object,
-    setup: (appSettings: Object, instance: KoaType, options: PluginOptions) => Promise
+  getDefaults: (app: Object) => Object,
+  setup: (appSettings: Object, instance: KoaType, options: PluginOptions) => Promise
 };
 
 type Plugins = {
-    [key: string]: Plugin
+  [key: string]: Plugin
 }
 
 type PluginOptions = {
-    dir: string,
-    port: number,
-    graphiql?: boolean
+  dir: string,
+  port: number,
+  graphiql?: boolean
 }
 
 type IsotropyOptionsType = {
-    dir: string,
-    port: number,
-    plugins: Plugins,
-    defaultInstance: KoaType
+  dir: string,
+  port: number,
+  plugins: Plugins,
+  defaultInstance: KoaType
 };
 
 export type IsotropyResultType = {
-    koa: KoaType
+  koa: KoaType
 };
 
 type IsotropyFnType = (apps: Object, options: IsotropyOptionsType) => Promise<IsotropyResultType>;
 
 const isotropy: IsotropyFnType = getIsotropy({
-    static: staticPlugin,
-    webapp: webappPlugin,
-    graphql: graphqlPlugin,
-    react: reactPlugin
+  static: staticPlugin,
+  webapp: webappPlugin,
+  graphql: graphqlPlugin,
+  react: reactPlugin
 });
 
 export default isotropy;
