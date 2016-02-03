@@ -6,7 +6,12 @@ export class IncomingMessage {
   trailers: Object;
   setTimeout: (msecs: number, callback: Function) => void;
   statusCode: number;
-  url: String;
+  url: string;
+  query: Object;
+  href: string;
+  pathname: string;
+  search: string;
+  body: Object;
 }
 
 export class ServerResponse {

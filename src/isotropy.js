@@ -7,8 +7,9 @@ import webappPlugin from "isotropy-plugin-webapp";
 import graphqlPlugin from "isotropy-plugin-graphql";
 import reactPlugin from "isotropy-plugin-react";
 
+import Router from "isotropy-router";
 import type { IsotropyOptionsType, IsotropyResultType } from "isotropy-core";
-import type { Server } from "./flow/http";
+import type { IncomingMessage, ServerResponse, Server } from "./flow/http";
 
 type IsotropyFnType = (apps: Object, options: IsotropyOptionsType) => Promise<IsotropyResultType>;
 
@@ -19,8 +20,8 @@ const isotropy: IsotropyFnType = getIsotropy({
   react: reactPlugin
 });
 
-export default async function(apps, options) {
-  options.handler = (router) => (req, res) => {
+export default async function(apps: Object, options: IsotropyOptionsType) : Promise<IsotropyResultType> {
+  options.handler = (router: Router) => (req: IncomingMessage, res: ServerResponse) => {
     urlMiddleware(req, res)
     .then(() => bodyMiddleware(req, res))
     .then(() => router.doRouting(req, res));
