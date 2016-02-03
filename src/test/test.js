@@ -1,15 +1,14 @@
 import __polyfill from "babel-polyfill";
 import should from 'should';
 import http from "http";
+import Router from "isotropy-router";
+import promisify from "nodefunc-promisify";
 import isotropy from "../isotropy";
-import koa from "koa";
 import querystring from "querystring";
 import MyComponent from "./react/my-component";
 import MySchema from "./graphql/my-schema";
 
 describe("Isotropy", () => {
-
-  let defaultInstance: KoaAppType;
 
   const makeRequest = (host, port, path, method, headers, _postData) => {
     return new Promise((resolve, reject) => {
@@ -28,30 +27,38 @@ describe("Isotropy", () => {
     });
   };
 
+  let server, router;
 
-  before(function() {
-    defaultInstance = new koa();
-    defaultInstance.listen(8080);
+  before(async () => {
+    server = http.createServer((req, res) => {
+      router.doRouting(req, res);
+    });
+    const listen = promisify(server.listen.bind(server));
+    await listen();
+  });
+
+  beforeEach(async () => {
+    router = new Router();
   });
 
 
   it(`Should serve a web app at /`, async () => {
     const app = {
       routes: [
-        { url: "/", method: "get", handler: async (context) => { context.body = "hello, root"; } }
+        { url: "/", method: "get", handler: async (req, res) => res.end("hello, root") }
       ]
     };
     const apps = [{ type: "webapp", module: app, path: "/" }];
-    await isotropy(apps, { dir: __dirname, defaultInstance });
-    const data = await makeRequest("localhost", 8080, "/", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
+    await isotropy(apps, { dir: __dirname, router });
+    const data = await makeRequest("localhost", server.address().port, "/", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, root");
   });
 
 
   it(`Should serve a static site at /static`, async () => {
     const apps = [{ type: "static" }];
-    await isotropy(apps, { dir: __dirname, defaultInstance });
-    const data = await makeRequest("localhost", 8080, "/static/hello.txt", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
+    await isotropy(apps, { dir: __dirname, router });
+    const data = await makeRequest("localhost", server.address().port, "/static/hello.txt", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, world\n");
   });
 
@@ -59,12 +66,12 @@ describe("Isotropy", () => {
   it(`Should serve a web app at /webapp`, async () => {
     const app = {
       routes: [
-        { url: "/webapp", method: "get", handler: async (context) => { context.body = "hello, world"; } }
+        { url: "/webapp", method: "get", handler: async (req, res) => res.end("hello, world") }
       ]
     };
     const apps = [{ type: "webapp", module: app, path: "/" }];
-    await isotropy(apps, { dir: __dirname, defaultInstance });
-    const data = await makeRequest("localhost", 8080, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
+    await isotropy(apps, { dir: __dirname, router });
+    const data = await makeRequest("localhost", server.address().port, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, world");
   });
 
@@ -80,10 +87,10 @@ describe("Isotropy", () => {
       const apps = [{ type: "react", module: moduleConfig, path: "/ui", renderToStaticMarkup }];
       const options = {
         dir: __dirname,
-        defaultInstance
+        router
       };
       await isotropy(apps, options);
-      const data = await makeRequest("localhost", 8080, `/ui/${url}/200`, "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
+      const data = await makeRequest("localhost", server.address().port, `/ui/${url}/200`, "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
       if (renderToStaticMarkup) {
         data.should.equal("<html><body>Hello 200</body></html>");
       } else {
@@ -99,13 +106,12 @@ describe("Isotropy", () => {
     ];
     const options = {
       dir: __dirname,
-      defaultInstance,
       graphql: {
         graphiql: true
       }
     };
-    await isotropy(apps, options);
-    const data = await makeRequest("localhost", 8080, "/graphql", "POST", { 'Content-Type': 'application/json' }, '{ "query": "query QueryRoot { test }" }');
+    const { server } = await isotropy(apps, options);
+    const data = await makeRequest("localhost", server.address().port, "/graphql", "POST", { 'Content-Type': 'application/json' }, '{ "query": "query QueryRoot { test }" }');
     data.should.startWith(`{"data":{"test":"Hello World"}}`);
   });
 });

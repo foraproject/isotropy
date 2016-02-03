@@ -1,7 +1,7 @@
 {
   "author": "Jeswin Kumar <jeswinpk@agilehead.com>",
   "name": "isotropy",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "Loader for Isotropy applications.",
   "scripts": {
     "update-schema": "node ./dist/scripts/updateSchema.js",
@@ -18,12 +18,12 @@
     "isotropy-plugin-static": "*",
     "isotropy-plugin-webapp": "*",
     "isotropy-plugin-graphql": "*",
-    "isotropy-plugin-react": "*"
+    "isotropy-plugin-react": "*",
+    "isotropy-middleware-url": "*",
+    "isotropy-middleware-body": "*"
   },
   "devDependencies": {
-    "koa": "2.0.0-alpha.3",
-    "express": "*",
-    "express-graphql": "*",
+    "isotropy-router": "*",
     "graphql": "*",
     "graphql-relay": "*",
     "babel-polyfill": "*",
