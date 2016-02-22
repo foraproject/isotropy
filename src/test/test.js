@@ -105,10 +105,7 @@ describe("Isotropy", () => {
       { type: "graphql", schema: MySchema }
     ];
     const options = {
-      dir: __dirname,
-      graphql: {
-        graphiql: true
-      }
+      dir: __dirname
     };
     const { server } = await isotropy(apps, options);
     const data = await makeRequest("localhost", server.address().port, "/graphql", "POST", { 'Content-Type': 'application/json' }, '{ "query": "query QueryRoot { test }" }');
