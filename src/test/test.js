@@ -30,8 +30,14 @@ describe("Isotropy", () => {
   let server, router;
 
   before(async () => {
+    const onError = (req, res, e) => {
+      res.statusCode = 200;
+      res.statusMessage = e.toString();
+      res.end(e.toString());
+    };
     server = http.createServer((req, res) => {
-      router.doRouting(req, res);
+      var p = router.doRouting(req, res);
+      p.catch((e) => onError(req, res, e));
     });
     const listen = promisify(server.listen.bind(server));
     await listen();
@@ -43,12 +49,10 @@ describe("Isotropy", () => {
 
 
   it(`Should serve a web app at /`, async () => {
-    const app = {
-      routes: [
-        { url: "/", method: "get", handler: async (req, res) => res.end("hello, root") }
-      ]
-    };
-    const apps = [{ type: "webapp", module: app, path: "/" }];
+    const routes = [
+      { url: "/", method: "get", handler: async (req, res) => res.end("hello, root") }
+    ];
+    const apps = [{ type: "webapp", routes, path: "/" }];
     await isotropy(apps, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, root");
@@ -64,27 +68,34 @@ describe("Isotropy", () => {
 
 
   it(`Should serve a web app at /webapp`, async () => {
-    const app = {
-      routes: [
-        { url: "/webapp", method: "get", handler: async (req, res) => res.end("hello, world") }
-      ]
-    };
-    const apps = [{ type: "webapp", module: app, path: "/" }];
+    const routes = [
+      { url: "/webapp", method: "get", handler: async (req, res) => res.end("hello, world") }
+    ];
+    const apps = [{ type: "webapp", routes, path: "/" }];
     await isotropy(apps, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, world");
   });
 
 
+  it(`Should catch errors`, async () => {
+    const routes = [
+      { url: "/webapp", method: "get", handler: async (req, res) => { throw "BOMB!"; } }
+    ];
+    const apps = [{ type: "webapp", routes, path: "/" }];
+    await isotropy(apps, { dir: __dirname, router });
+    const data = await makeRequest("localhost", server.address().port, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
+    data.should.equal("BOMB!");
+  });
+
+
   [[false, "hello_nonstatic"], [true, "hello_static"]].forEach(([renderToStaticMarkup, url]) => {
     const strStaticRender = renderToStaticMarkup ? "as static markup" : "as string";
     it(`Should serve a React Component ${strStaticRender} at /ui`, async () => {
-      const moduleConfig = {
-        routes: [
-          { url: `/${url}/:id`, method: "GET", component: MyComponent }
-        ]
-      }
-      const apps = [{ type: "react", module: moduleConfig, path: "/ui", renderToStaticMarkup }];
+      const routes = [
+        { url: `/${url}/:id`, method: "GET", component: MyComponent }
+      ];
+      const apps = [{ type: "react", routes, path: "/ui", renderToStaticMarkup }];
       const options = {
         dir: __dirname,
         router

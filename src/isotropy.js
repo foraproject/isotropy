@@ -21,10 +21,16 @@ const isotropy: IsotropyFnType = getIsotropy({
 });
 
 export default async function(apps: Object, options: IsotropyOptionsType) : Promise<IsotropyResultType> {
+  const onError = options.onError ||
+    ((req, res, e) => {
+      res.statusCode = 200;
+      res.statusMessage = e.toString();
+      res.end(e.toString());
+    });
   options.handler = (router: Router) => (req: IncomingMessage, res: ServerResponse) => {
     urlMiddleware(req, res)
     .then(() => bodyMiddleware(req, res))
-    .then(() => router.doRouting(req, res));
+    .then(() => router.doRouting(req, res).catch((e) => onError(req, res, e)));
   };
   return await isotropy(apps, options);
 };
