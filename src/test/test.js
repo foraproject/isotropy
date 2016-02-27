@@ -8,7 +8,21 @@ import querystring from "querystring";
 import MyComponent from "./react/my-component";
 import MySchema from "./graphql/my-schema";
 
+import staticPlugin from "isotropy-plugin-static";
+import webappPlugin from "isotropy-plugin-webapp";
+import graphqlPlugin from "isotropy-plugin-graphql";
+import reactPlugin from "isotropy-plugin-react";
+import reactRelayPlugin from "isotropy-plugin-react-relay";
+
 describe("Isotropy", () => {
+
+  const plugins = [
+    staticPlugin,
+    webappPlugin,
+    graphqlPlugin,
+    reactPlugin,
+    reactRelayPlugin
+  ];
 
   const makeRequest = (host, port, path, method, headers, _postData) => {
     return new Promise((resolve, reject) => {
@@ -53,7 +67,7 @@ describe("Isotropy", () => {
       { url: "/", method: "get", handler: async (req, res) => res.end("hello, root") }
     ];
     const apps = [{ type: "webapp", routes, path: "/" }];
-    await isotropy(apps, { dir: __dirname, router });
+    await isotropy(apps, plugins, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, root");
   });
@@ -61,7 +75,7 @@ describe("Isotropy", () => {
 
   it(`Should serve a static site at /static`, async () => {
     const apps = [{ type: "static" }];
-    await isotropy(apps, { dir: __dirname, router });
+    await isotropy(apps, plugins, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/static/hello.txt", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, world\n");
   });
@@ -72,7 +86,7 @@ describe("Isotropy", () => {
       { url: "/webapp", method: "get", handler: async (req, res) => res.end("hello, world") }
     ];
     const apps = [{ type: "webapp", routes, path: "/" }];
-    await isotropy(apps, { dir: __dirname, router });
+    await isotropy(apps, plugins, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("hello, world");
   });
@@ -83,7 +97,7 @@ describe("Isotropy", () => {
       { url: "/webapp", method: "get", handler: async (req, res) => { throw "BOMB!"; } }
     ];
     const apps = [{ type: "webapp", routes, path: "/" }];
-    await isotropy(apps, { dir: __dirname, router });
+    await isotropy(apps, plugins, { dir: __dirname, router });
     const data = await makeRequest("localhost", server.address().port, "/webapp", "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
     data.should.equal("BOMB!");
   });
@@ -100,7 +114,7 @@ describe("Isotropy", () => {
         dir: __dirname,
         router
       };
-      await isotropy(apps, options);
+      await isotropy(apps, plugins, options);
       const data = await makeRequest("localhost", server.address().port, `/ui/${url}/200`, "GET", { 'Content-Type': 'application/x-www-form-urlencoded' }, {});
       if (renderToStaticMarkup) {
         data.should.equal("<html><body>Hello 200</body></html>");
@@ -118,7 +132,7 @@ describe("Isotropy", () => {
     const options = {
       dir: __dirname
     };
-    const { server } = await isotropy(apps, options);
+    const { server } = await isotropy(apps, plugins, options);
     const data = await makeRequest("localhost", server.address().port, "/graphql", "POST", { 'Content-Type': 'application/json' }, '{ "query": "query QueryRoot { test }" }');
     data.should.startWith(`{"data":{"test":"Hello World"}}`);
   });
