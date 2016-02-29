@@ -1,4 +1,5 @@
 /* @flow */
+import http from "http";
 import getIsotropy from "isotropy-core";
 import urlMiddleware from "isotropy-middleware-url";
 import bodyMiddleware from "isotropy-middleware-body";
@@ -10,7 +11,7 @@ import type { IncomingMessage, ServerResponse, Server } from "./flow/http";
 type IsotropyFnType = (apps: Object, options: IsotropyOptionsType) => Promise<IsotropyResultType>;
 
 export default async function(apps: Object, plugins: Array<PluginType>, options: IsotropyOptionsType) : Promise<IsotropyResultType> {
-  const isotropy: IsotropyFnType = getIsotropy(plugins);
+  const isotropy: IsotropyFnType = getIsotropy(plugins, http);
 
   options.handler = (router: Router) => (req: IncomingMessage, res: ServerResponse) => {
     urlMiddleware(req, res)
