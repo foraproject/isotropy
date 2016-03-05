@@ -5,7 +5,7 @@ import bodyMiddleware from "isotropy-middleware-body";
 import Router from "isotropy-router";
 import type { PluginType } from "isotropy-core";
 import type { IsotropyOptionsType, IsotropyResultType } from "isotropy-core";
-import type { IncomingMessage, ServerResponse, Server } from "./flow/http";
+import type { IncomingMessage, ServerResponse, Server } from "isotropy-interfaces/node/http";
 
 type IsotropyFnType = (apps: Object, options: IsotropyOptionsType) => Promise<IsotropyResultType>;
 
