@@ -119,7 +119,7 @@ describe("Isotropy", () => {
       if (renderToStaticMarkup) {
         data.should.equal("<html><body>Hello 200</body></html>");
       } else {
-        data.should.startWith("<html data-reactid");
+        data.should.startWith("<html data-reactroot");
       }
     });
   });

@@ -1,7 +1,7 @@
 {
   "author": "Jeswin Kumar <jeswinpk@agilehead.com>",
   "name": "isotropy",
-  "version": "8.0.3",
+  "version": "8.0.5",
   "description": "Loader for Isotropy applications.",
   "scripts": {
     "update-schema": "node ./dist/scripts/updateSchema.js",
