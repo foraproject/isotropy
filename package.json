@@ -1,10 +1,9 @@
 {
   "author": "Jeswin Kumar <jeswinpk@agilehead.com>",
   "name": "isotropy",
-  "version": "8.0.5",
-  "description": "Loader for Isotropy applications.",
+  "version": "9.0.0",
+  "description": "isomorphic framework for JavaScript",
   "scripts": {
-    "update-schema": "node ./dist/scripts/updateSchema.js",
     "test": "mocha dist/test/test.js"
   },
   "repository": {
@@ -14,34 +13,21 @@
   "main": "dist/isotropy",
   "license": "MIT",
   "dependencies": {
-    "isotropy-core": "*",
-    "isotropy-router": "*",
-    "isotropy-middleware-url": "*",
-    "isotropy-middleware-body": "*",
-    "isotropy-interfaces": "*"
+    "acorn": "^4.0.3",
+    "should": "^11.1.1",
+    "source-map-support": "^0.4.5"
   },
   "devDependencies": {
-    "graphql": "*",
-    "graphql-relay": "*",
-    "isotropy-plugin-static": "*",
-    "isotropy-plugin-webapp": "*",
-    "isotropy-plugin-graphql": "*",
-    "isotropy-plugin-react": "*",
-    "isotropy-plugin-react-relay": "*",
-    "babel-polyfill": "*",
-    "babel-preset-es2015": "*",
-    "babel-preset-react": "*",
-    "babel-preset-stage-2": "*",
+    "babel-core": "6.16.0",
+    "babel-plugin-transform-async-to-generator": "*",
     "babel-plugin-transform-class-properties": "*",
-    "babel-relay-plugin-loader": "*",
-    "mocha": "*",
-    "should": "*"
+    "babel-preset-node6": "*",
+    "babel-preset-stage-3": "*",
+    "mocha": "^3.1.2"
   },
-  "metadata": {
-    "graphql": {
-      "schema": "./dist/test/react/my-schema.json"
-    }
-  },
-  "keywords": ["isotropy", "isomorphic"],
-  "license" : "MIT"
+  "keywords": [
+    "isotropy",
+    "isomorphic",
+    "universal"
+  ]
 }

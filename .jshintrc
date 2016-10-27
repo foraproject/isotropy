@@ -1,6 +1,0 @@
-{
-  "esnext": true,
-  "multistr": true,
-  "noyield": true,
-  "globals": {}
-}
